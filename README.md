@@ -1,1 +1,2 @@
-# User-crud-challenge
+# Customer Care Platform
+Next-gen Software Project
