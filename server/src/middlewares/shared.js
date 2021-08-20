@@ -7,4 +7,11 @@ const isUniqueEmail = async (email) => {
   if (isClientEmail) throw new Error('Failed! Email already in use!!');
 };
 
-export default isUniqueEmail;
+const isValidUserToken = async (value) => {
+  const token = value.split(' ')[1];
+  const tokenData = jwt.verify(token, process.env.SECRET);
+  if (!tokenData) throw new Error(tokenData);
+  return true;
+};
+
+export default { isUniqueEmail, isValidUserToken };

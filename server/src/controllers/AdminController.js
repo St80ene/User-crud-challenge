@@ -1,66 +1,38 @@
-import Admin from '../models/AdminModel';
+import Admin from '../Models/admin.js';
+import bcrypt from 'bcryptjs';
+import { validationResult } from 'express-validator';
 
 class AdminController {
   constructor() {
     //
   }
 
-  async get(req, res) {
+    async login(req, res){
     try {
-      const user = await Admin.find();
-      res
+      // check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+      const { email, password } = req.body;
+      // Search for unique Admin
+      const admin = await Admin.findOne({ email });
+      if (!admin) return res.status(400).json({ message: 'Invalid Login info' });
+      // checking password validity
+      const isValidPassword = await bcrypt.compare(password, admin.password);
+      if (!isValidPassword) {
+        return res.status(400).json({ message: 'Invalid login password' });
+      }
+      // sign admin token
+      const token = jwt.sign({ email: admin.email }, process.env.SECRET, {
+        expiresIn: '12h',
+      });
+      return res
         .status(200)
-        .json({ status: 200, message: "Here's a list of Admins", data: user });
+        .json({ message: 'Admin login successful', token });
     } catch (error) {
-      res.status(500).json({ status: 500, message: error.message });
+      return res.status(500).json({ message: 'Internal Server error', error });
     }
-  }
-
-  async getById(req, res) {
-    try {
-      const id = req.params.id;
-      const user = await signUpModel.findById(id);
-      if (user) {
-        res
-          .status(200)
-          .json({ status: 200, message: "Here's your search", data: user });
-      } else {
-        throw new Error('User with this ID was not found');
-      }
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  async delete(req, res) {
-    // get the id from request
-    try {
-      let userId = req.params.id;
-      const user = await Admin.findByIdAndDelete(userId, req.body);
-      if (user) {
-        res.status(200).json({ status: 200, message: `User deleted` });
-      } else {
-        throw new Error('User with this ID was not found');
-      }
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  }
-
-  async update(req, res) {
-    try {
-      let userId = req.params.id;
-
-      const user = await Admin.findByIdAndUpdate(userId, req.body);
-      if (user) {
-        res.status(200).json({ status: 200, message: 'Update successful!!' });
-      } else {
-        throw new Error('User with this ID does not exist');
-      }
-    } catch (error) {
-      res.status(500).json(error.message);
-    }
-  }
+  };
 }
 
 export default AdminController;

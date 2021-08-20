@@ -7,11 +7,17 @@ exports["default"] = void 0;
 
 var _user = _interopRequireDefault(require("../Models/user.js"));
 
+var _token = _interopRequireDefault(require("../Models/token.js"));
+
 var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
 
 var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 
 var _dotenv = _interopRequireDefault(require("dotenv"));
+
+var _expressValidator = require("express-validator");
+
+var _randomCharacterGenerator = _interopRequireDefault(require("../lib/randomCharacterGenerator.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -37,42 +43,35 @@ var UserController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, fullName, email, phone, sex, age, password, savedUser, salt, hashedPassword, token, user;
+        var _req$body, fullName, email, phone, sex, age, password, error, salt, hashedPassword, token;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password; //checking if user is saved
+                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password;
+                error = (0, _expressValidator.validationResult)(req);
 
-                _context.next = 4;
-                return _user["default"].findOne({
-                  email: email
-                });
-
-              case 4:
-                savedUser = _context.sent;
-
-                if (!savedUser) {
-                  _context.next = 7;
+                if (error.isEmpty()) {
+                  _context.next = 5;
                   break;
                 }
 
-                return _context.abrupt("return", res.status(400).json({
-                  message: 'Your record already exists with us!!'
+                return _context.abrupt("return", res.status(422).json({
+                  errors: error.array()
                 }));
 
-              case 7:
-                _context.next = 9;
+              case 5:
+                _context.next = 7;
                 return _bcryptjs["default"].genSalt(10);
 
-              case 9:
+              case 7:
                 salt = _context.sent;
-                _context.next = 12;
+                _context.next = 10;
                 return _bcryptjs["default"].hash(password, salt);
 
-              case 12:
+              case 10:
                 hashedPassword = _context.sent;
                 token = _jsonwebtoken["default"].sign({
                   email: email
@@ -80,7 +79,7 @@ var UserController = /*#__PURE__*/function () {
                   expiresIn: '20d'
                 }); //saving a user to database
 
-                _context.next = 16;
+                _context.next = 14;
                 return _user["default"].create({
                   fullName: fullName,
                   email: email,
@@ -90,28 +89,27 @@ var UserController = /*#__PURE__*/function () {
                   age: age
                 });
 
-              case 16:
-                user = _context.sent;
+              case 14:
                 return _context.abrupt("return", res.status(200).json({
                   status: 200,
                   message: 'You have signed up successfully',
                   token: token
                 }));
 
-              case 20:
-                _context.prev = 20;
+              case 17:
+                _context.prev = 17;
                 _context.t0 = _context["catch"](0);
                 return _context.abrupt("return", res.status(500).json({
                   status: 500,
                   message: _context.t0.message
                 }));
 
-              case 23:
+              case 20:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 20]]);
+        }, _callee, null, [[0, 17]]);
       }));
 
       function signUp(_x, _x2) {
@@ -124,7 +122,7 @@ var UserController = /*#__PURE__*/function () {
     key: "login",
     value: function () {
       var _login = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
-        var _req$body2, email, password, client, isValidPassword, token;
+        var _req$body2, email, password, error, client, isValidPassword, token;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -132,21 +130,29 @@ var UserController = /*#__PURE__*/function () {
               case 0:
                 _context2.prev = 0;
                 _req$body2 = req.body, email = _req$body2.email, password = _req$body2.password; // check for errors from validator
-                // const error = validationResult(req);
-                // if (!error.isEmpty())
-                //   return res.status(422).json({ errors: error.array() });
-                // Check if client exists
 
-                _context2.next = 4;
+                error = (0, _expressValidator.validationResult)(req);
+
+                if (error.isEmpty()) {
+                  _context2.next = 5;
+                  break;
+                }
+
+                return _context2.abrupt("return", res.status(422).json({
+                  errors: error.array()
+                }));
+
+              case 5:
+                _context2.next = 7;
                 return _user["default"].findOne({
                   email: email
                 });
 
-              case 4:
+              case 7:
                 client = _context2.sent;
 
                 if (client) {
-                  _context2.next = 7;
+                  _context2.next = 10;
                   break;
                 }
 
@@ -154,15 +160,15 @@ var UserController = /*#__PURE__*/function () {
                   message: 'Invalid login details'
                 }));
 
-              case 7:
-                _context2.next = 9;
+              case 10:
+                _context2.next = 12;
                 return _bcryptjs["default"].compare(password, client.password);
 
-              case 9:
+              case 12:
                 isValidPassword = _context2.sent;
 
                 if (isValidPassword) {
-                  _context2.next = 12;
+                  _context2.next = 15;
                   break;
                 }
 
@@ -170,7 +176,7 @@ var UserController = /*#__PURE__*/function () {
                   message: 'Invalid login password'
                 }));
 
-              case 12:
+              case 15:
                 // Generate user token
                 token = _jsonwebtoken["default"].sign({
                   email: client.email
@@ -182,8 +188,8 @@ var UserController = /*#__PURE__*/function () {
                   token: token
                 }));
 
-              case 16:
-                _context2.prev = 16;
+              case 19:
+                _context2.prev = 19;
                 _context2.t0 = _context2["catch"](0);
                 return _context2.abrupt("return", res.status(500).json({
                   status: 500,
@@ -191,12 +197,12 @@ var UserController = /*#__PURE__*/function () {
                   error: _context2.t0
                 }));
 
-              case 19:
+              case 22:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, null, [[0, 16]]);
+        }, _callee2, null, [[0, 19]]);
       }));
 
       function login(_x3, _x4) {
@@ -369,21 +375,34 @@ var UserController = /*#__PURE__*/function () {
     key: "update",
     value: function () {
       var _update = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
-        var userId, user;
+        var error, userId, user;
         return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
                 _context6.prev = 0;
-                userId = req.params.id;
-                _context6.next = 4;
-                return _user["default"].findByIdAndUpdate(userId, req.body);
+                // check for errors from validator
+                error = (0, _expressValidator.validationResult)(req);
+
+                if (error.isEmpty()) {
+                  _context6.next = 4;
+                  break;
+                }
+
+                return _context6.abrupt("return", res.status(422).json({
+                  errors: error.array()
+                }));
 
               case 4:
+                userId = req.params.id;
+                _context6.next = 7;
+                return _user["default"].findByIdAndUpdate(userId, req.body);
+
+              case 7:
                 user = _context6.sent;
 
                 if (!user) {
-                  _context6.next = 9;
+                  _context6.next = 12;
                   break;
                 }
 
@@ -391,27 +410,27 @@ var UserController = /*#__PURE__*/function () {
                   status: 200,
                   message: 'Update successful!!'
                 });
-                _context6.next = 10;
-                break;
-
-              case 9:
-                throw new Error('User with this ID does not exist');
-
-              case 10:
-                _context6.next = 15;
+                _context6.next = 13;
                 break;
 
               case 12:
-                _context6.prev = 12;
+                throw new Error('User with this ID does not exist');
+
+              case 13:
+                _context6.next = 18;
+                break;
+
+              case 15:
+                _context6.prev = 15;
                 _context6.t0 = _context6["catch"](0);
                 res.status(500).json(_context6.t0.message);
 
-              case 15:
+              case 18:
               case "end":
                 return _context6.stop();
             }
           }
-        }, _callee6, null, [[0, 12]]);
+        }, _callee6, null, [[0, 15]]);
       }));
 
       function update(_x11, _x12) {
@@ -419,6 +438,144 @@ var UserController = /*#__PURE__*/function () {
       }
 
       return update;
+    }()
+  }, {
+    key: "requestPasswordReset",
+    value: function () {
+      var _requestPasswordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
+        var error, email, user, token, expireDate, text, subject, transporter, mailOptions;
+        return regeneratorRuntime.wrap(function _callee7$(_context7) {
+          while (1) {
+            switch (_context7.prev = _context7.next) {
+              case 0:
+                _context7.prev = 0;
+                error = (0, _expressValidator.validationResult)(req);
+
+                if (error.isEmpty()) {
+                  _context7.next = 4;
+                  break;
+                }
+
+                return _context7.abrupt("return", res.status(422).json({
+                  errors: error.array()
+                }));
+
+              case 4:
+                email = req.body.email; // Find unique user
+
+                _context7.next = 7;
+                return _user["default"].findOne({
+                  email: email
+                });
+
+              case 7:
+                user = _context7.sent;
+
+                if (user) {
+                  _context7.next = 10;
+                  break;
+                }
+
+                return _context7.abrupt("return", res.status(400).json({
+                  message: 'This user does not exist..please try again later.'
+                }));
+
+              case 10:
+                _context7.next = 12;
+                return _token["default"].update({
+                  used: 1
+                }, {
+                  email: email
+                });
+
+              case 12:
+                // Generate a random reset token
+                // const token = crypto.randomBytes(64).toString('base64');
+                token = (0, _randomCharacterGenerator["default"])(6); // create token to expire after one hour
+
+                expireDate = new Date();
+                expireDate.setDate(expireDate.getDate() + 1 / 24); // insert token data into DB
+
+                _context7.next = 17;
+                return _token["default"].create({
+                  email: email,
+                  expiration: expireDate,
+                  token: token,
+                  used: 0
+                });
+
+              case 17:
+                // Send email
+                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/").concat(token);
+                subject = 'Forgot Password'; // send email notification
+
+                transporter = nodemailer.createTransport({
+                  host: emailHost,
+                  // service: emailService,
+                  port: 465,
+                  secure: true,
+                  auth: {
+                    user: emailSender,
+                    pass: emailPassword
+                  },
+                  tls: {
+                    secureProtocol: 'TLSv1_method'
+                  }
+                });
+                mailOptions = {
+                  from: "".concat(emailSender),
+                  to: email,
+                  subject: subject,
+                  text: text,
+                  replyTo: emailSender
+                };
+                transporter.sendMail(mailOptions);
+                return _context7.abrupt("return", res.status(200).json('Check your email for reset token and click on the link'));
+
+              case 25:
+                _context7.prev = 25;
+                _context7.t0 = _context7["catch"](0);
+                return _context7.abrupt("return", res.status(500).json({
+                  status: 500,
+                  message: _context7.t0.errors.map(function (err) {
+                    return err.message.replace(/"/g, '');
+                  })
+                }));
+
+              case 28:
+              case "end":
+                return _context7.stop();
+            }
+          }
+        }, _callee7, null, [[0, 25]]);
+      }));
+
+      function requestPasswordReset(_x13, _x14) {
+        return _requestPasswordReset.apply(this, arguments);
+      }
+
+      return requestPasswordReset;
+    }()
+  }, {
+    key: "passwordReset",
+    value: function () {
+      var _passwordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(req, res) {
+        return regeneratorRuntime.wrap(function _callee8$(_context8) {
+          while (1) {
+            switch (_context8.prev = _context8.next) {
+              case 0:
+              case "end":
+                return _context8.stop();
+            }
+          }
+        }, _callee8);
+      }));
+
+      function passwordReset(_x15, _x16) {
+        return _passwordReset.apply(this, arguments);
+      }
+
+      return passwordReset;
     }()
   }]);
 
