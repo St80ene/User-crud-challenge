@@ -21,7 +21,7 @@ class UserController {
 
   async signUp(req, res) {
     try {
-      const { fullName, email, phone, sex, age, password } = req.body;
+      const { fullName, email, phone, sex, age, password, role } = req.body;
 
       const error = validationResult(req);
       if (!error.isEmpty())
@@ -32,7 +32,7 @@ class UserController {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       const token = jwt.sign({ email }, process.env.SECRET, {
-        expiresIn: '20d',
+        expiresIn: '1d',
       });
 
       //saving a user to database
@@ -43,11 +43,12 @@ class UserController {
         password: hashedPassword,
         sex,
         age,
+        role: role || 'basic',
+        token
       });
 
       const transporter = nodemailer.createTransport({
         host: emailHost,
-        // service: emailService,
         port: 465,
         secure: true,
         auth: {
@@ -85,13 +86,13 @@ class UserController {
       // check for errors from validator
       const error = validationResult(req);
       if (!error.isEmpty())
-        return res.status(422).json({ errors: error.array() });
-
+      return res.status(422).json({ errors: error.array() });
+      
       // Check if client exists
       const client = await User.findOne({ email });
-
+      
       if (!client)
-        return res.status(400).json({ message: 'Invalid login details' });
+      return res.status(400).json({ message: 'Invalid login details' });
       // If client exists check password
       const isValidPassword = await bcrypt.compare(password, client.password);
       if (!isValidPassword) {
@@ -108,11 +109,14 @@ class UserController {
         {
           expiresIn: '20d',
         }
-      );
-      return res.status(200).json({
-        message: 'You have logged in successfully',
-        token,
-      });
+        );
+      // await User.findByIdAndUpdate(user._id, { accessToken: token });
+      
+        return res.status(200).json({
+          message: 'You have logged in successfully',
+          role: client.role,
+          token,
+        });
     } catch (error) {
       return res.status(500).json({
         status: 500,

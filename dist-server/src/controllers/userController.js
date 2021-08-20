@@ -50,14 +50,14 @@ var UserController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, fullName, email, phone, sex, age, password, error, salt, hashedPassword, token, transporter, mailOptions;
+        var _req$body, fullName, email, phone, sex, age, password, role, error, salt, hashedPassword, token, transporter, mailOptions;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password;
+                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password, role = _req$body.role;
                 error = (0, _expressValidator.validationResult)(req);
 
                 if (error.isEmpty()) {
@@ -83,7 +83,7 @@ var UserController = /*#__PURE__*/function () {
                 token = _jsonwebtoken["default"].sign({
                   email: email
                 }, process.env.SECRET, {
-                  expiresIn: '20d'
+                  expiresIn: '1d'
                 }); //saving a user to database
 
                 _context.next = 14;
@@ -93,13 +93,14 @@ var UserController = /*#__PURE__*/function () {
                   phone: phone,
                   password: hashedPassword,
                   sex: sex,
-                  age: age
+                  age: age,
+                  role: role || 'basic',
+                  token: token
                 });
 
               case 14:
                 transporter = _nodemailer["default"].createTransport({
                   host: emailHost,
-                  // service: emailService,
                   port: 465,
                   secure: true,
                   auth: {
@@ -210,9 +211,11 @@ var UserController = /*#__PURE__*/function () {
                   email: client.email
                 }, process.env.SECRET, {
                   expiresIn: '20d'
-                });
+                }); // await User.findByIdAndUpdate(user._id, { accessToken: token });
+
                 return _context2.abrupt("return", res.status(200).json({
                   message: 'You have logged in successfully',
+                  role: client.role,
                   token: token
                 }));
 
