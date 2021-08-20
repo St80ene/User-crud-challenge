@@ -31,9 +31,9 @@ class UserController {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const token = jwt.sign({ email }, process.env.SECRET, {
-        expiresIn: '1d',
-      });
+      // const token = jwt.sign({ email, isAdmin }, process.env.SECRET, {
+      //   expiresIn: '1d',
+      // });
 
       //saving a user to database
       await User.create({
@@ -43,7 +43,6 @@ class UserController {
         password: hashedPassword,
         sex,
         age,
-        role: role || 'basic',
         token
       });
 

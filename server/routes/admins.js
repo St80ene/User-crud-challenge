@@ -2,6 +2,8 @@ import express from 'express';
 import pkg from 'express-validator';
 import AdminController from '../src/controllers/AdminController.js';
 import SharedMiddleware from '../src/middlewares/shared.js';
+import authUser from '../src/middlewares/auth.js';
+import adminUser from '../src/middlewares/admin.js';
 
 const router = express.Router();
 
@@ -10,9 +12,9 @@ const admin = new AdminController();
 const { body, header } = pkg;
 
 /* GET users listing. */
-router.get('/', admin.get);
+router.get('/', [authUser, adminUser], admin.get);
 
-router.get('/:id', admin.getById);
+router.get('/:id', [authUser, adminUser], admin.getById);
 
 router.post(
   '/signup',
@@ -49,6 +51,7 @@ router.post(
 
 router.post(
   '/login',
+  [authUser, adminUser],
   [
     body('email', "Failed! Email can't be blank")
       .exists()
@@ -68,6 +71,7 @@ router.post(
 
 router.put(
   '/edit/:id',
+  [authUser, adminUser],
   [
     header('authorization', 'Please specify an authorization header')
       .exists()
@@ -88,7 +92,7 @@ router.put(
   admin.update
 );
 
-router.delete('/delete/:id', admin.delete);
+router.delete('/delete/:id', [authUser, adminUser], admin.delete);
 
 router.post(
   '/forgot-password',

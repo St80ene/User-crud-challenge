@@ -1,5 +1,8 @@
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 const { Schema } = mongoose;
+dotenv.config();
 
 const User = new Schema({
   fullName: {
@@ -27,15 +30,21 @@ const User = new Schema({
     type: Number,
     required: true,
   },
-  role: {
-    type: String,
-    default: 'basic',
-    enum: ['basic', 'admin'],
-  },
+  isAdmin: Boolean,
   date: {
     type: Date,
     default: Date.now,
   },
 });
+
+User.method.generateAuthToken = function () {
+  const token = jwt.sign(
+    { _id: this._id, isAdmin: this.isAdmin },
+    process.env.SECRET,
+    { expiresIn: '1d' }
+  );
+
+  return token;
+}
 
 export default mongoose.model('user', User);

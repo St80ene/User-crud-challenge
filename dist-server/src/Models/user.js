@@ -7,9 +7,16 @@ exports["default"] = void 0;
 
 var _mongoose = _interopRequireDefault(require("mongoose"));
 
+var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
+
+var _dotenv = _interopRequireDefault(require("dotenv"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var Schema = _mongoose["default"].Schema;
+
+_dotenv["default"].config();
+
 var User = new Schema({
   fullName: {
     type: String,
@@ -36,16 +43,23 @@ var User = new Schema({
     type: Number,
     required: true
   },
-  role: {
-    type: String,
-    "default": 'basic',
-    "enum": ['basic', 'admin']
-  },
+  isAdmin: Boolean,
   date: {
     type: Date,
     "default": Date.now
   }
 });
+
+User.method.generateAuthToken = function () {
+  var token = _jsonwebtoken["default"].sign({
+    _id: this._id,
+    isAdmin: this.isAdmin
+  }, process.env.SECRET, {
+    expiresIn: '1d'
+  });
+
+  return token;
+};
 
 var _default = _mongoose["default"].model('user', User);
 
