@@ -17,7 +17,8 @@ var User = new Schema({
   },
   email: {
     type: String,
-    required: true
+    required: true,
+    trim: true
   },
   phone: {
     type: String,
@@ -36,9 +37,9 @@ var User = new Schema({
     required: true
   },
   role: {
-    type: Number,
-    "default": 0,
-    required: true
+    type: String,
+    "default": 'basic',
+    "enum": ['basic', 'admin']
   },
   date: {
     type: Date,

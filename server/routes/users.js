@@ -1,7 +1,9 @@
 import express from 'express';
 import pkg from 'express-validator';
 import UserController from '../src/controllers/userController.js';
+// import allowIfLoggedin from '../src/middlewares/authLogin.js';
 import SharedMiddleware from '../src/middlewares/shared.js';
+// import grantAccess from '../src/middlewares/grantAccess.js';
 
 const router = express.Router();
 
@@ -10,7 +12,10 @@ const user = new UserController();
 const { body, header } = pkg;
 
 /* GET users listing. */
-router.get('/', user.get);
+router.get('/',
+  // allowIfLoggedin,
+  // grantAccess('readAny', 'profile'),
+  user.get);
 
 router.get('/:id', user.getById);
 
@@ -68,6 +73,8 @@ router.post(
 
 router.put(
   '/edit/:id',
+  // allowIfLoggedin,
+  // grantAccess('updateAny', 'profile'),
   [
     header('authorization', 'Please specify an authorization header')
       .exists()
@@ -102,7 +109,12 @@ router.put(
   user.update
 );
 
-router.delete('/delete/:id', user.delete);
+router.delete(
+  '/delete/:id',
+  // allowIfLoggedin,
+  // grantAccess('deleteAny', 'profile'),
+  user.delete
+);
 
 router.post(
   '/forgot-password',
