@@ -30,7 +30,7 @@ const User = new Schema({
     type: Number,
     required: true,
   },
-  isAdmin: Boolean,
+  isAdmin: true,
   date: {
     type: Date,
     default: Date.now,
