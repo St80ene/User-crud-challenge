@@ -4,9 +4,15 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import { validationResult } from 'express-validator';
+import nodemailer from 'nodemailer';
 import randomString from '../lib/randomCharacterGenerator.js';
 
 dotenv.config();
+
+const emailPassword = process.env.EMAIL_PASSWORD;
+const emailSender = process.env.EMAIL_SENDER;
+const resetPasswordUrl = process.env.RESET_PASSWORD_URL;
+const emailHost = process.env.EMAIL_HOST;
 
 class UserController {
   constructor() {
@@ -38,6 +44,30 @@ class UserController {
         sex,
         age,
       });
+
+      const transporter = nodemailer.createTransport({
+        host: emailHost,
+        // service: emailService,
+        port: 465,
+        secure: true,
+        auth: {
+          user: emailSender,
+          pass: emailPassword,
+        },
+        tls: {
+          secureProtocol: 'TLSv1_method',
+        },
+      });
+
+      const mailOptions = {
+        from: `${emailSender}`,
+        to: email,
+        subject: `Hello ${fullName}`,
+        text: 'Welcome to Customer care platform the king you are. Please log in with your details. This is an automatically generated email. Please do not reply to this email.',
+        replyTo: emailSender,
+      };
+
+      transporter.sendMail(mailOptions);
 
       return res.status(200).json({
         status: 200,
@@ -159,6 +189,7 @@ class UserController {
       const error = validationResult(req);
       if (!error.isEmpty())
         return res.status(422).json({ errors: error.array() });
+      
       const { email } = req.body;
       // Find unique user
       const user = await User.findOne({ email });
@@ -167,34 +198,17 @@ class UserController {
           message: 'This user does not exist..please try again later.',
         });
 
-      await Token.update(
-        {
-          used: 1,
-        },
-        {
-          email,
-        }
-      );
-
-      // Generate a random reset token
-      // const token = crypto.randomBytes(64).toString('base64');
-      const token = randomString(6);
-
-      // create token to expire after one hour
-      const expireDate = new Date();
-      expireDate.setDate(expireDate.getDate() + 1 / 24);
-
-      // insert token data into DB
-      await Token.create({
-        email,
-        expiration: expireDate,
-        token,
-        used: 0,
-      });
+      let token = await Token.findOne({ userId: user._id });
+      if (!token) {
+        token = await new Token({
+          userId: user._id,
+          token: randomString(6),
+        }).save();
+      }
 
       // Send email
       const text = `To reset your password,
-      please click the link below.\n\n${resetPasswordUrl}/${token}`;
+      please click the link below.\n\n${resetPasswordUrl}/password-reset/${user._id}/${token.token}`;
 
       const subject = 'Forgot Password';
 
@@ -202,7 +216,6 @@ class UserController {
 
       const transporter = nodemailer.createTransport({
         host: emailHost,
-        // service: emailService,
         port: 465,
         secure: true,
         auth: {
@@ -226,15 +239,47 @@ class UserController {
 
       return res
         .status(200)
-        .json('Check your email for reset token and click on the link');
+        .json('Password reset link sent to your email account');
     } catch (error) {
       return res.status(500).json({
         status: 500,
-        message: error.errors.map((err) => err.message.replace(/"/g, '')),
+        message: error.message,
       });
     }
   }
-  async passwordReset(req, res) {}
+  async passwordReset(req, res) {
+    try {
+      const error = validationResult(req);
+      if (!error.isEmpty())
+        return res.status(422).json({ errors: error.array() });
+      
+      const { password } = req.body;
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(400).json({status: 400, message: 'invalid link or expired' });
+
+      const token = await Token.findOne({
+        userId: user._id,
+        token: req.params.token,
+      });
+      if (!token) return res
+        .status(400)
+        .json({ status: 400, message: 'invalid link or expired' });
+
+      user.password = password;
+      await user.save();
+      await token.delete();
+
+      return res
+        .status(200)
+        .json({ status: 200, message: 'Password reset sucessfully. Please login with your new password' });
+
+    } catch (error) {
+       return res.status(500).json({
+         status: 500,
+         message: error.errors.map((err) => err.message.replace(/"/g, '')),
+       });
+    }
+  }
 }
 
 export default UserController;

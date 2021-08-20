@@ -9,6 +9,8 @@ var _jsonwebtoken = _interopRequireDefault(require("jsonwebtoken"));
 
 var _user = _interopRequireDefault(require("../Models/user.js"));
 
+var _admin = _interopRequireDefault(require("../Models/admin.js"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -83,8 +85,44 @@ var isValidUserToken = /*#__PURE__*/function () {
   };
 }();
 
+var isUniqueAdminEmail = /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(email) {
+    var isClientEmail;
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return _admin["default"].findOne({
+              email: email
+            });
+
+          case 2:
+            isClientEmail = _context3.sent;
+
+            if (!isClientEmail) {
+              _context3.next = 5;
+              break;
+            }
+
+            throw new Error('Failed! Email already in use!!');
+
+          case 5:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+
+  return function isUniqueAdminEmail(_x3) {
+    return _ref3.apply(this, arguments);
+  };
+}();
+
 var _default = {
   isUniqueEmail: isUniqueEmail,
-  isValidUserToken: isValidUserToken
+  isValidUserToken: isValidUserToken,
+  isUniqueAdminEmail: isUniqueAdminEmail
 };
 exports["default"] = _default;
