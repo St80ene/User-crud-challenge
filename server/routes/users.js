@@ -116,7 +116,7 @@ router.post(
 );
 
 router.post(
-  '/reset-password/:token',
+  '/reset-password/:id/:token',
   [
     body('password', "Failed! Password can't be blank")
       .exists()

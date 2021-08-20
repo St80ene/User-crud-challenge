@@ -17,6 +17,8 @@ var _dotenv = _interopRequireDefault(require("dotenv"));
 
 var _expressValidator = require("express-validator");
 
+var _nodemailer = _interopRequireDefault(require("nodemailer"));
+
 var _randomCharacterGenerator = _interopRequireDefault(require("../lib/randomCharacterGenerator.js"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
@@ -33,6 +35,11 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 _dotenv["default"].config();
 
+var emailPassword = process.env.EMAIL_PASSWORD;
+var emailSender = process.env.EMAIL_SENDER;
+var resetPasswordUrl = process.env.RESET_PASSWORD_URL;
+var emailHost = process.env.EMAIL_HOST;
+
 var UserController = /*#__PURE__*/function () {
   function UserController() {//
 
@@ -43,7 +50,7 @@ var UserController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, fullName, email, phone, sex, age, password, error, salt, hashedPassword, token;
+        var _req$body, fullName, email, phone, sex, age, password, error, salt, hashedPassword, token, transporter, mailOptions;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -90,26 +97,47 @@ var UserController = /*#__PURE__*/function () {
                 });
 
               case 14:
+                transporter = _nodemailer["default"].createTransport({
+                  host: emailHost,
+                  // service: emailService,
+                  port: 465,
+                  secure: true,
+                  auth: {
+                    user: emailSender,
+                    pass: emailPassword
+                  },
+                  tls: {
+                    secureProtocol: 'TLSv1_method'
+                  }
+                });
+                mailOptions = {
+                  from: "".concat(emailSender),
+                  to: email,
+                  subject: "Hello ".concat(fullName),
+                  text: 'Welcome to Customer care platform the king you are. Please log in with your details. This is an automatically generated email. Please do not reply to this email.',
+                  replyTo: emailSender
+                };
+                transporter.sendMail(mailOptions);
                 return _context.abrupt("return", res.status(200).json({
                   status: 200,
                   message: 'You have signed up successfully',
                   token: token
                 }));
 
-              case 17:
-                _context.prev = 17;
+              case 20:
+                _context.prev = 20;
                 _context.t0 = _context["catch"](0);
                 return _context.abrupt("return", res.status(500).json({
                   status: 500,
                   message: _context.t0.message
                 }));
 
-              case 20:
+              case 23:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 17]]);
+        }, _callee, null, [[0, 20]]);
       }));
 
       function signUp(_x, _x2) {
@@ -443,7 +471,7 @@ var UserController = /*#__PURE__*/function () {
     key: "requestPasswordReset",
     value: function () {
       var _requestPasswordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
-        var error, email, user, token, expireDate, text, subject, transporter, mailOptions;
+        var error, email, user, token, text, subject, transporter, mailOptions;
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -482,36 +510,34 @@ var UserController = /*#__PURE__*/function () {
 
               case 10:
                 _context7.next = 12;
-                return _token["default"].update({
-                  used: 1
-                }, {
-                  email: email
+                return _token["default"].findOne({
+                  userId: user._id
                 });
 
               case 12:
-                // Generate a random reset token
-                // const token = crypto.randomBytes(64).toString('base64');
-                token = (0, _randomCharacterGenerator["default"])(6); // create token to expire after one hour
+                token = _context7.sent;
 
-                expireDate = new Date();
-                expireDate.setDate(expireDate.getDate() + 1 / 24); // insert token data into DB
+                if (token) {
+                  _context7.next = 17;
+                  break;
+                }
 
-                _context7.next = 17;
-                return _token["default"].create({
-                  email: email,
-                  expiration: expireDate,
-                  token: token,
-                  used: 0
-                });
+                _context7.next = 16;
+                return new _token["default"]({
+                  userId: user._id,
+                  token: (0, _randomCharacterGenerator["default"])(6)
+                }).save();
+
+              case 16:
+                token = _context7.sent;
 
               case 17:
                 // Send email
-                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/").concat(token);
+                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/password-reset/").concat(user._id, "/").concat(token.token);
                 subject = 'Forgot Password'; // send email notification
 
-                transporter = nodemailer.createTransport({
+                transporter = _nodemailer["default"].createTransport({
                   host: emailHost,
-                  // service: emailService,
                   port: 465,
                   secure: true,
                   auth: {
@@ -530,16 +556,14 @@ var UserController = /*#__PURE__*/function () {
                   replyTo: emailSender
                 };
                 transporter.sendMail(mailOptions);
-                return _context7.abrupt("return", res.status(200).json('Check your email for reset token and click on the link'));
+                return _context7.abrupt("return", res.status(200).json('Password reset link sent to your email account'));
 
               case 25:
                 _context7.prev = 25;
                 _context7.t0 = _context7["catch"](0);
                 return _context7.abrupt("return", res.status(500).json({
                   status: 500,
-                  message: _context7.t0.errors.map(function (err) {
-                    return err.message.replace(/"/g, '');
-                  })
+                  message: _context7.t0.message
                 }));
 
               case 28:
@@ -560,15 +584,92 @@ var UserController = /*#__PURE__*/function () {
     key: "passwordReset",
     value: function () {
       var _passwordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(req, res) {
+        var error, password, user, token;
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
               case 0:
+                _context8.prev = 0;
+                error = (0, _expressValidator.validationResult)(req);
+
+                if (error.isEmpty()) {
+                  _context8.next = 4;
+                  break;
+                }
+
+                return _context8.abrupt("return", res.status(422).json({
+                  errors: error.array()
+                }));
+
+              case 4:
+                password = req.body.password;
+                _context8.next = 7;
+                return _user["default"].findById(req.params.id);
+
+              case 7:
+                user = _context8.sent;
+
+                if (user) {
+                  _context8.next = 10;
+                  break;
+                }
+
+                return _context8.abrupt("return", res.status(400).json({
+                  status: 400,
+                  message: 'invalid link or expired'
+                }));
+
+              case 10:
+                _context8.next = 12;
+                return _token["default"].findOne({
+                  userId: user._id,
+                  token: req.params.token
+                });
+
+              case 12:
+                token = _context8.sent;
+
+                if (token) {
+                  _context8.next = 15;
+                  break;
+                }
+
+                return _context8.abrupt("return", res.status(400).json({
+                  status: 400,
+                  message: 'invalid link or expired'
+                }));
+
+              case 15:
+                user.password = password;
+                _context8.next = 18;
+                return user.save();
+
+              case 18:
+                _context8.next = 20;
+                return token["delete"]();
+
+              case 20:
+                return _context8.abrupt("return", res.status(200).json({
+                  status: 200,
+                  message: 'Password reset sucessfully. Please login with your new password'
+                }));
+
+              case 23:
+                _context8.prev = 23;
+                _context8.t0 = _context8["catch"](0);
+                return _context8.abrupt("return", res.status(500).json({
+                  status: 500,
+                  message: _context8.t0.errors.map(function (err) {
+                    return err.message.replace(/"/g, '');
+                  })
+                }));
+
+              case 26:
               case "end":
                 return _context8.stop();
             }
           }
-        }, _callee8);
+        }, _callee8, null, [[0, 23]]);
       }));
 
       function passwordReset(_x15, _x16) {

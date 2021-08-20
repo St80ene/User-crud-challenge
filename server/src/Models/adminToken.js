@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-const Token = new Schema({
+const adminToken = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     required: true,
-    ref: 'user',
+    ref: 'admin',
   },
   token: {
     type: String,
@@ -18,4 +18,4 @@ const Token = new Schema({
   },
 });
 
-export default mongoose.model('token', Token);
+export default mongoose.model('adminToken', adminToken);

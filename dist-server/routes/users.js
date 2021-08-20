@@ -44,7 +44,7 @@ router.put('/edit/:id', [header('authorization', 'Please specify an authorizatio
 }), body('password', "Failed! Password can't be blank").optional().isStrongPassword().withMessage('Weak password, allowed format is { minLength: 8, minLowerCase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1}')], user.update);
 router["delete"]('/delete/:id', user["delete"]);
 router.post('/forgot-password', [body('email', "Failed! Email can't be blank").optional().isEmail().withMessage('Invalid email format')], user.requestPasswordReset);
-router.post('/reset-password/:token', [body('password', "Failed! Password can't be blank").exists().bail().isString().withMessage('Failed! Password must be a string').isStrongPassword().withMessage('Weak Password, allowed format is: {minLength: 8, minSymbol: 1, minUpperCase: 1, minLowerCase: 1}').custom(function (email) {
+router.post('/reset-password/:id/:token', [body('password', "Failed! Password can't be blank").exists().bail().isString().withMessage('Failed! Password must be a string').isStrongPassword().withMessage('Weak Password, allowed format is: {minLength: 8, minSymbol: 1, minUpperCase: 1, minLowerCase: 1}').custom(function (email) {
   return _shared["default"].isUniqueEmail(email);
 })], user.passwordReset);
 var _default = router;
