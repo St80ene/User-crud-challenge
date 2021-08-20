@@ -5,7 +5,11 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _AdminModel = _interopRequireDefault(require("../models/AdminModel"));
+var _admin = _interopRequireDefault(require("../Models/admin.js"));
+
+var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
+
+var _expressValidator = require("express-validator");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -26,219 +30,97 @@ var AdminController = /*#__PURE__*/function () {
   }
 
   _createClass(AdminController, [{
-    key: "get",
+    key: "login",
     value: function () {
-      var _get = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var user;
+      var _login = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
+        var errors, _req$body, email, password, admin, isValidPassword, token;
+
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                _context.next = 3;
-                return _AdminModel["default"].find();
+                // check for validation errors
+                errors = (0, _expressValidator.validationResult)(req);
 
-              case 3:
-                user = _context.sent;
-                res.status(200).json({
-                  status: 200,
-                  message: "Here's a list of Admins",
-                  data: user
+                if (errors.isEmpty()) {
+                  _context.next = 4;
+                  break;
+                }
+
+                return _context.abrupt("return", res.status(422).json({
+                  errors: errors.array()
+                }));
+
+              case 4:
+                _req$body = req.body, email = _req$body.email, password = _req$body.password; // Search for unique Admin
+
+                _context.next = 7;
+                return _admin["default"].findOne({
+                  email: email
                 });
-                _context.next = 10;
-                break;
 
               case 7:
-                _context.prev = 7;
-                _context.t0 = _context["catch"](0);
-                res.status(500).json({
-                  status: 500,
-                  message: _context.t0.message
-                });
+                admin = _context.sent;
+
+                if (admin) {
+                  _context.next = 10;
+                  break;
+                }
+
+                return _context.abrupt("return", res.status(400).json({
+                  message: 'Invalid Login info'
+                }));
 
               case 10:
+                _context.next = 12;
+                return _bcryptjs["default"].compare(password, admin.password);
+
+              case 12:
+                isValidPassword = _context.sent;
+
+                if (isValidPassword) {
+                  _context.next = 15;
+                  break;
+                }
+
+                return _context.abrupt("return", res.status(400).json({
+                  message: 'Invalid login password'
+                }));
+
+              case 15:
+                // sign admin token
+                token = jwt.sign({
+                  email: admin.email
+                }, process.env.SECRET, {
+                  expiresIn: '12h'
+                });
+                return _context.abrupt("return", res.status(200).json({
+                  message: 'Admin login successful',
+                  token: token
+                }));
+
+              case 19:
+                _context.prev = 19;
+                _context.t0 = _context["catch"](0);
+                return _context.abrupt("return", res.status(500).json({
+                  message: 'Internal Server error',
+                  error: _context.t0
+                }));
+
+              case 22:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 7]]);
+        }, _callee, null, [[0, 19]]);
       }));
 
-      function get(_x, _x2) {
-        return _get.apply(this, arguments);
+      function login(_x, _x2) {
+        return _login.apply(this, arguments);
       }
 
-      return get;
-    }()
-  }, {
-    key: "getById",
-    value: function () {
-      var _getById = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
-        var id, user;
-        return regeneratorRuntime.wrap(function _callee2$(_context2) {
-          while (1) {
-            switch (_context2.prev = _context2.next) {
-              case 0:
-                _context2.prev = 0;
-                id = req.params.id;
-                _context2.next = 4;
-                return signUpModel.findById(id);
-
-              case 4:
-                user = _context2.sent;
-
-                if (!user) {
-                  _context2.next = 9;
-                  break;
-                }
-
-                res.status(200).json({
-                  status: 200,
-                  message: "Here's your search",
-                  data: user
-                });
-                _context2.next = 10;
-                break;
-
-              case 9:
-                throw new Error('User with this ID was not found');
-
-              case 10:
-                _context2.next = 15;
-                break;
-
-              case 12:
-                _context2.prev = 12;
-                _context2.t0 = _context2["catch"](0);
-                res.status(500).json({
-                  message: _context2.t0.message
-                });
-
-              case 15:
-              case "end":
-                return _context2.stop();
-            }
-          }
-        }, _callee2, null, [[0, 12]]);
-      }));
-
-      function getById(_x3, _x4) {
-        return _getById.apply(this, arguments);
-      }
-
-      return getById;
-    }()
-  }, {
-    key: "delete",
-    value: function () {
-      var _delete2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(req, res) {
-        var userId, user;
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
-          while (1) {
-            switch (_context3.prev = _context3.next) {
-              case 0:
-                _context3.prev = 0;
-                userId = req.params.id;
-                _context3.next = 4;
-                return _AdminModel["default"].findByIdAndDelete(userId, req.body);
-
-              case 4:
-                user = _context3.sent;
-
-                if (!user) {
-                  _context3.next = 9;
-                  break;
-                }
-
-                res.status(200).json({
-                  status: 200,
-                  message: "User deleted"
-                });
-                _context3.next = 10;
-                break;
-
-              case 9:
-                throw new Error('User with this ID was not found');
-
-              case 10:
-                _context3.next = 15;
-                break;
-
-              case 12:
-                _context3.prev = 12;
-                _context3.t0 = _context3["catch"](0);
-                res.status(500).json({
-                  message: _context3.t0.message
-                });
-
-              case 15:
-              case "end":
-                return _context3.stop();
-            }
-          }
-        }, _callee3, null, [[0, 12]]);
-      }));
-
-      function _delete(_x5, _x6) {
-        return _delete2.apply(this, arguments);
-      }
-
-      return _delete;
-    }()
-  }, {
-    key: "update",
-    value: function () {
-      var _update = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
-        var userId, user;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
-          while (1) {
-            switch (_context4.prev = _context4.next) {
-              case 0:
-                _context4.prev = 0;
-                userId = req.params.id;
-                _context4.next = 4;
-                return _AdminModel["default"].findByIdAndUpdate(userId, req.body);
-
-              case 4:
-                user = _context4.sent;
-
-                if (!user) {
-                  _context4.next = 9;
-                  break;
-                }
-
-                res.status(200).json({
-                  status: 200,
-                  message: 'Update successful!!'
-                });
-                _context4.next = 10;
-                break;
-
-              case 9:
-                throw new Error('User with this ID does not exist');
-
-              case 10:
-                _context4.next = 15;
-                break;
-
-              case 12:
-                _context4.prev = 12;
-                _context4.t0 = _context4["catch"](0);
-                res.status(500).json(_context4.t0.message);
-
-              case 15:
-              case "end":
-                return _context4.stop();
-            }
-          }
-        }, _callee4, null, [[0, 12]]);
-      }));
-
-      function update(_x7, _x8) {
-        return _update.apply(this, arguments);
-      }
-
-      return update;
+      return login;
     }()
   }]);
 

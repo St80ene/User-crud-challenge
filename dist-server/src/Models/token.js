@@ -10,18 +10,21 @@ var _mongoose = _interopRequireDefault(require("mongoose"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 var Schema = _mongoose["default"].Schema;
-var Admin = new Schema({
+var Token = new Schema({
   email: {
     type: String,
     required: true
   },
-  password: {
+  token: {
     type: String,
     required: true
   },
-  role: {
+  expiration: {
+    type: Date,
+    required: true
+  },
+  used: {
     type: Number,
-    "default": 1,
     required: true
   },
   date: {
@@ -30,6 +33,6 @@ var Admin = new Schema({
   }
 });
 
-var _default = _mongoose["default"].model('admin', Admin);
+var _default = _mongoose["default"].model('token', Token);
 
 exports["default"] = _default;

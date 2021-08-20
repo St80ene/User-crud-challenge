@@ -1,7 +1,10 @@
 import User from '../Models/user.js';
+import Token from '../Models/token.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { validationResult } from 'express-validator';
+import randomString from '../lib/randomCharacterGenerator.js';
 
 dotenv.config();
 
@@ -14,12 +17,9 @@ class UserController {
     try {
       const { fullName, email, phone, sex, age, password } = req.body;
 
-      //checking if user is saved
-      // const savedUser = await User.findOne({ email });
-      // if (savedUser)
-      //   return res
-      //     .status(400)
-      //     .json({ message: 'Your record already exists with us!!' });
+      const error = validationResult(req);
+      if (!error.isEmpty())
+        return res.status(422).json({ errors: error.array() });
 
       //hashing user's password
       const salt = await bcrypt.genSalt(10);
@@ -38,11 +38,11 @@ class UserController {
         sex,
         age,
       });
-      
+
       return res.status(200).json({
         status: 200,
         message: 'You have signed up successfully',
-        token
+        token,
       });
     } catch (error) {
       return res.status(500).json({ status: 500, message: error.message });
@@ -53,9 +53,9 @@ class UserController {
     try {
       const { email, password } = req.body;
       // check for errors from validator
-      // const error = validationResult(req);
-      // if (!error.isEmpty())
-      //   return res.status(422).json({ errors: error.array() });
+      const error = validationResult(req);
+      if (!error.isEmpty())
+        return res.status(422).json({ errors: error.array() });
 
       // Check if client exists
       const client = await User.findOne({ email });
@@ -136,6 +136,11 @@ class UserController {
 
   async update(req, res) {
     try {
+      // check for errors from validator
+      const error = validationResult(req);
+      if (!error.isEmpty())
+        return res.status(422).json({ errors: error.array() });
+
       let userId = req.params.id;
 
       const user = await User.findByIdAndUpdate(userId, req.body);
@@ -148,6 +153,88 @@ class UserController {
       res.status(500).json(error.message);
     }
   }
+
+  async requestPasswordReset(req, res) {
+    try {
+      const error = validationResult(req);
+      if (!error.isEmpty())
+        return res.status(422).json({ errors: error.array() });
+      const { email } = req.body;
+      // Find unique user
+      const user = await User.findOne({ email });
+      if (!user)
+        return res.status(400).json({
+          message: 'This user does not exist..please try again later.',
+        });
+
+      await Token.update(
+        {
+          used: 1,
+        },
+        {
+          email,
+        }
+      );
+
+      // Generate a random reset token
+      // const token = crypto.randomBytes(64).toString('base64');
+      const token = randomString(6);
+
+      // create token to expire after one hour
+      const expireDate = new Date();
+      expireDate.setDate(expireDate.getDate() + 1 / 24);
+
+      // insert token data into DB
+      await Token.create({
+        email,
+        expiration: expireDate,
+        token,
+        used: 0,
+      });
+
+      // Send email
+      const text = `To reset your password,
+      please click the link below.\n\n${resetPasswordUrl}/${token}`;
+
+      const subject = 'Forgot Password';
+
+      // send email notification
+
+      const transporter = nodemailer.createTransport({
+        host: emailHost,
+        // service: emailService,
+        port: 465,
+        secure: true,
+        auth: {
+          user: emailSender,
+          pass: emailPassword,
+        },
+        tls: {
+          secureProtocol: 'TLSv1_method',
+        },
+      });
+
+      const mailOptions = {
+        from: `${emailSender}`,
+        to: email,
+        subject,
+        text,
+        replyTo: emailSender,
+      };
+
+      transporter.sendMail(mailOptions);
+
+      return res
+        .status(200)
+        .json('Check your email for reset token and click on the link');
+    } catch (error) {
+      return res.status(500).json({
+        status: 500,
+        message: error.errors.map((err) => err.message.replace(/"/g, '')),
+      });
+    }
+  }
+  async passwordReset(req, res) {}
 }
 
 export default UserController;

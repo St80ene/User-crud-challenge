@@ -1,18 +1,21 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-const Admin = new Schema({
+const Token = new Schema({
   email: {
     type: String,
     required: true,
   },
-  password: {
+  token: {
     type: String,
     required: true,
   },
-  role: {
+  expiration: {
+    type: Date,
+    required: true,
+  },
+  used: {
     type: Number,
-    default: 1,
     required: true,
   },
   date: {
@@ -21,4 +24,4 @@ const Admin = new Schema({
   },
 });
 
-export default mongoose.model('admin', Admin);
+export default mongoose.model('token', Token);
