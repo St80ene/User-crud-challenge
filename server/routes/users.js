@@ -1,9 +1,9 @@
 import express from 'express';
 import pkg from 'express-validator';
 import UserController from '../src/controllers/userController.js';
-// import allowIfLoggedin from '../src/middlewares/authLogin.js';
 import SharedMiddleware from '../src/middlewares/shared.js';
-// import grantAccess from '../src/middlewares/grantAccess.js';
+import authUser from '../src/middlewares/auth.js';
+import admin from '../src/middlewares/admin.js';
 
 const router = express.Router();
 
@@ -12,12 +12,9 @@ const user = new UserController();
 const { body, header } = pkg;
 
 /* GET users listing. */
-router.get('/',
-  // allowIfLoggedin,
-  // grantAccess('readAny', 'profile'),
-  user.get);
+router.get('/',[authUser, admin],user.get);
 
-router.get('/:id', user.getById);
+router.get('/:id',[authUser, admin], user.getById);
 
 router.post(
   '/signup',
@@ -54,6 +51,7 @@ router.post(
 
 router.post(
   '/login',
+  authUser,
   [
     body('email', "Failed! Email can't be blank")
       .exists()
@@ -73,8 +71,7 @@ router.post(
 
 router.put(
   '/edit/:id',
-  // allowIfLoggedin,
-  // grantAccess('updateAny', 'profile'),
+  authUser,
   [
     header('authorization', 'Please specify an authorization header')
       .exists()
@@ -109,12 +106,7 @@ router.put(
   user.update
 );
 
-router.delete(
-  '/delete/:id',
-  // allowIfLoggedin,
-  // grantAccess('deleteAny', 'profile'),
-  user.delete
-);
+router.delete('/delete/:id', [authUser, admin], user.delete);
 
 router.post(
   '/forgot-password',
