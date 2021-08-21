@@ -13,11 +13,6 @@ const Admin = new Schema({
     type: String,
     required: true,
   },
-  role: {
-    type: Number,
-    default: 1,
-    required: true,
-  },
   isAdmin: Boolean,
   date: {
     type: Date,
@@ -25,14 +20,14 @@ const Admin = new Schema({
   },
 });
 
-Admin.method.generateAuthToken = function () {
-  const token = jwt.sign(
-    { _id: this._id, isAdmin: this.isAdmin },
-    process.env.SECRET,
-    { expiresIn: '1d' }
-  );
+// Admin.method.generateAuthToken = function () {
+//   const token = jwt.sign(
+//     { _id: this._id, isAdmin: this.isAdmin },
+//     process.env.SECRET,
+//     { expiresIn: '1d' }
+//   );
 
-  return token;
-};
+//   return token;
+// };
 
 export default mongoose.model('admin', Admin);

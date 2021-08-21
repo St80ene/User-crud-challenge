@@ -26,6 +26,9 @@ var isAdmin = /*#__PURE__*/function () {
             }));
 
           case 2:
+            next();
+
+          case 3:
           case "end":
             return _context.stop();
         }

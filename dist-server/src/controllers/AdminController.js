@@ -33,6 +33,7 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
+// import admin from '../Models/admin.js';
 _dotenv["default"].config();
 
 var emailPassword = process.env.EMAIL_PASSWORD;
@@ -49,14 +50,14 @@ var AdminController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, email, password, error, salt, hashedPassword, token;
+        var _req$body, email, password, isAdmin, error, salt, hashedPassword, admin, token;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                _req$body = req.body, email = _req$body.email, password = _req$body.password;
+                _req$body = req.body, email = _req$body.email, password = _req$body.password, isAdmin = _req$body.isAdmin;
                 error = (0, _expressValidator.validationResult)(req);
 
                 if (error.isEmpty()) {
@@ -79,39 +80,41 @@ var AdminController = /*#__PURE__*/function () {
 
               case 10:
                 hashedPassword = _context.sent;
-                token = _jsonwebtoken["default"].sign({
-                  email: email
-                }, process.env.SECRET, {
-                  expiresIn: '20d'
-                }); //saving a user to database
-
-                _context.next = 14;
+                _context.next = 13;
                 return _admin["default"].create({
                   email: email,
-                  password: hashedPassword
+                  password: hashedPassword,
+                  isAdmin: isAdmin
                 });
 
-              case 14:
+              case 13:
+                admin = _context.sent;
+                token = _jsonwebtoken["default"].sign({
+                  _id: admin._id,
+                  isAdmin: admin.isAdmin
+                }, process.env.SECRET, {
+                  expiresIn: '1d'
+                });
                 return _context.abrupt("return", res.status(200).json({
                   status: 200,
                   message: 'You have signed up successfully',
                   token: token
                 }));
 
-              case 17:
-                _context.prev = 17;
+              case 18:
+                _context.prev = 18;
                 _context.t0 = _context["catch"](0);
                 return _context.abrupt("return", res.status(500).json({
                   status: 500,
                   message: _context.t0.message
                 }));
 
-              case 20:
+              case 21:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 17]]);
+        }, _callee, null, [[0, 18]]);
       }));
 
       function signUp(_x, _x2) {
@@ -182,9 +185,10 @@ var AdminController = /*#__PURE__*/function () {
               case 15:
                 // sign admin token
                 token = _jsonwebtoken["default"].sign({
-                  email: admin.email
+                  _id: admin._id,
+                  isAdmin: admin.isAdmin
                 }, process.env.SECRET, {
-                  expiresIn: '12h'
+                  expiresIn: '1d'
                 });
                 return _context2.abrupt("return", res.status(200).json({
                   message: 'Admin login successful',
@@ -223,14 +227,15 @@ var AdminController = /*#__PURE__*/function () {
             switch (_context3.prev = _context3.next) {
               case 0:
                 _context3.prev = 0;
-                _context3.next = 3;
+                console.log('searching...');
+                _context3.next = 4;
                 return _admin["default"].find();
 
-              case 3:
+              case 4:
                 admin = _context3.sent;
 
                 if (admin.length) {
-                  _context3.next = 6;
+                  _context3.next = 7;
                   break;
                 }
 
@@ -239,27 +244,27 @@ var AdminController = /*#__PURE__*/function () {
                   message: "No Administrators available yet...please sign up"
                 }));
 
-              case 6:
+              case 7:
                 return _context3.abrupt("return", res.status(200).json({
                   status: 200,
                   message: "Here's a list of Administrators",
                   data: admin
                 }));
 
-              case 9:
-                _context3.prev = 9;
+              case 10:
+                _context3.prev = 10;
                 _context3.t0 = _context3["catch"](0);
                 res.status(500).json({
                   status: 500,
                   message: _context3.t0.message
                 });
 
-              case 12:
+              case 13:
               case "end":
                 return _context3.stop();
             }
           }
-        }, _callee3, null, [[0, 9]]);
+        }, _callee3, null, [[0, 10]]);
       }));
 
       function get(_x5, _x6) {
@@ -420,7 +425,7 @@ var AdminController = /*#__PURE__*/function () {
 
                 res.status(200).json({
                   status: 200,
-                  message: 'Update successful!!'
+                  message: 'Update successful'
                 });
                 _context6.next = 13;
                 break;

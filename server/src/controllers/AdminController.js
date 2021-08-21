@@ -6,6 +6,7 @@ import nodemailer from 'nodemailer';
 import Admin from '../Models/admin.js';
 import adminToken from '../Models/adminToken.js';
 import randomString from '../lib/randomCharacterGenerator.js';
+// import admin from '../Models/admin.js';
 
 dotenv.config();
 
@@ -18,7 +19,7 @@ const emailHost = process.env.EMAIL_HOST;
 class AdminController {
   async signUp(req, res) {
     try {
-      const { email, password } = req.body;
+      const { email, password, isAdmin } = req.body;
 
       const error = validationResult(req);
       if (!error.isEmpty())
@@ -28,16 +29,17 @@ class AdminController {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const token = jwt.sign({ email }, process.env.SECRET, {
-        expiresIn: '20d',
-      });
-
+      
       //saving a user to database
-      await Admin.create({
+      const admin = await Admin.create({
         email,
         password: hashedPassword,
+        isAdmin,
       });
-
+      
+      const token = jwt.sign({ _id: admin._id, isAdmin: admin.isAdmin }, process.env.SECRET, {
+        expiresIn: '1d',
+      });
       return res.status(200).json({
         status: 200,
         message: 'You have signed up successfully',
@@ -66,9 +68,13 @@ class AdminController {
         return res.status(400).json({ message: 'Invalid login password' });
       }
       // sign admin token
-      const token = jwt.sign({ email: admin.email }, process.env.SECRET, {
-        expiresIn: '12h',
-      });
+      const token = jwt.sign(
+        { _id: admin._id, isAdmin: admin.isAdmin },
+        process.env.SECRET,
+        {
+          expiresIn: '1d',
+        }
+      );
       return res.status(200).json({ message: 'Admin login successful', token });
     } catch (error) {
       return res.status(500).json({ message: 'Internal Server error', error });
@@ -77,6 +83,7 @@ class AdminController {
 
   async get(req, res) {
     try {
+      console.log('searching...');
       const admin = await Admin.find();
       if (!admin.length) {
         return res
@@ -136,7 +143,7 @@ class AdminController {
 
       const admin = await Admin.findByIdAndUpdate(adminId, req.body);
       if (admin) {
-        res.status(200).json({ status: 200, message: 'Update successful!!' });
+        res.status(200).json({ status: 200, message: 'Update successful' });
       } else {
         throw new Error('Admin with this ID does not exist');
       }

@@ -7,7 +7,7 @@ exports["default"] = void 0;
 
 var _user = _interopRequireDefault(require("../Models/user.js"));
 
-var _token4 = _interopRequireDefault(require("../Models/token.js"));
+var _token = _interopRequireDefault(require("../Models/token.js"));
 
 var _bcryptjs = _interopRequireDefault(require("bcryptjs"));
 
@@ -50,14 +50,14 @@ var UserController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, fullName, email, phone, sex, age, password, role, error, salt, hashedPassword, transporter, mailOptions;
+        var _req$body, fullName, email, phone, sex, age, password, isAdmin, error, salt, hashedPassword, user, token, transporter, mailOptions;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
                 _context.prev = 0;
-                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password, role = _req$body.role;
+                _req$body = req.body, fullName = _req$body.fullName, email = _req$body.email, phone = _req$body.phone, sex = _req$body.sex, age = _req$body.age, password = _req$body.password, isAdmin = _req$body.isAdmin;
                 error = (0, _expressValidator.validationResult)(req);
 
                 if (error.isEmpty()) {
@@ -88,10 +88,17 @@ var UserController = /*#__PURE__*/function () {
                   password: hashedPassword,
                   sex: sex,
                   age: age,
-                  token: token
+                  isAdmin: isAdmin
                 });
 
               case 13:
+                user = _context.sent;
+                token = _jsonwebtoken["default"].sign({
+                  _id: user._id,
+                  isAdmin: user.isAdmin
+                }, process.env.SECRET, {
+                  expiresIn: '1d'
+                });
                 transporter = _nodemailer["default"].createTransport({
                   host: emailHost,
                   port: 465,
@@ -118,20 +125,20 @@ var UserController = /*#__PURE__*/function () {
                   token: token
                 }));
 
-              case 19:
-                _context.prev = 19;
+              case 21:
+                _context.prev = 21;
                 _context.t0 = _context["catch"](0);
                 return _context.abrupt("return", res.status(500).json({
                   status: 500,
                   message: _context.t0.message
                 }));
 
-              case 22:
+              case 24:
               case "end":
                 return _context.stop();
             }
           }
-        }, _callee, null, [[0, 19]]);
+        }, _callee, null, [[0, 21]]);
       }));
 
       function signUp(_x, _x2) {
@@ -144,7 +151,7 @@ var UserController = /*#__PURE__*/function () {
     key: "login",
     value: function () {
       var _login = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(req, res) {
-        var _req$body2, email, password, error, client, isValidPassword, _token;
+        var _req$body2, email, password, error, client, isValidPassword, token;
 
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
@@ -200,7 +207,7 @@ var UserController = /*#__PURE__*/function () {
 
               case 15:
                 // Generate user token
-                _token = _jsonwebtoken["default"].sign({
+                token = _jsonwebtoken["default"].sign({
                   email: client.email
                 }, process.env.SECRET, {
                   expiresIn: '20d'
@@ -209,7 +216,7 @@ var UserController = /*#__PURE__*/function () {
                 return _context2.abrupt("return", res.status(200).json({
                   message: 'You have logged in successfully',
                   role: client.role,
-                  token: _token
+                  token: token
                 }));
 
               case 19:
@@ -467,8 +474,7 @@ var UserController = /*#__PURE__*/function () {
     key: "requestPasswordReset",
     value: function () {
       var _requestPasswordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
-        var error, email, user, _token2, text, subject, transporter, mailOptions;
-
+        var error, email, user, token, text, subject, transporter, mailOptions;
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -507,30 +513,30 @@ var UserController = /*#__PURE__*/function () {
 
               case 10:
                 _context7.next = 12;
-                return _token4["default"].findOne({
+                return _token["default"].findOne({
                   userId: user._id
                 });
 
               case 12:
-                _token2 = _context7.sent;
+                token = _context7.sent;
 
-                if (_token2) {
+                if (token) {
                   _context7.next = 17;
                   break;
                 }
 
                 _context7.next = 16;
-                return new _token4["default"]({
+                return new _token["default"]({
                   userId: user._id,
                   token: (0, _randomCharacterGenerator["default"])(6)
                 }).save();
 
               case 16:
-                _token2 = _context7.sent;
+                token = _context7.sent;
 
               case 17:
                 // Send email
-                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/password-reset/").concat(user._id, "/").concat(_token2.token);
+                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/password-reset/").concat(user._id, "/").concat(token.token);
                 subject = 'Forgot Password'; // send email notification
 
                 transporter = _nodemailer["default"].createTransport({
@@ -581,8 +587,7 @@ var UserController = /*#__PURE__*/function () {
     key: "passwordReset",
     value: function () {
       var _passwordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(req, res) {
-        var error, password, user, _token3;
-
+        var error, password, user, token;
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
@@ -619,15 +624,15 @@ var UserController = /*#__PURE__*/function () {
 
               case 10:
                 _context8.next = 12;
-                return _token4["default"].findOne({
+                return _token["default"].findOne({
                   userId: user._id,
                   token: req.params.token
                 });
 
               case 12:
-                _token3 = _context8.sent;
+                token = _context8.sent;
 
-                if (_token3) {
+                if (token) {
                   _context8.next = 15;
                   break;
                 }
@@ -644,7 +649,7 @@ var UserController = /*#__PURE__*/function () {
 
               case 18:
                 _context8.next = 20;
-                return _token3["delete"]();
+                return token["delete"]();
 
               case 20:
                 return _context8.abrupt("return", res.status(200).json({

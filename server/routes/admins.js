@@ -20,11 +20,11 @@ router.post(
   '/signup',
   [
     body('Role', 'Failed! Role Field is not permitted').not().exists(),
-    body('fullName', 'Failed! Last Name cannot be blank')
+    body('fullName', 'Failed! Full Name cannot be blank')
       .exists()
       .bail()
       .isString()
-      .withMessage('Failed! Last Name must be a string')
+      .withMessage('Failed! Full Name must be a string')
       .trim()
       .isLength({ min: 3, max: 30 })
       .withMessage('Minimum of 3 and max of 10 characters'),

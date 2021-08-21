@@ -24,27 +24,19 @@ var Admin = new Schema({
     type: String,
     required: true
   },
-  role: {
-    type: Number,
-    "default": 1,
-    required: true
-  },
   isAdmin: Boolean,
   date: {
     type: Date,
     "default": Date.now
   }
-});
-
-Admin.method.generateAuthToken = function () {
-  var token = jwt.sign({
-    _id: this._id,
-    isAdmin: this.isAdmin
-  }, process.env.SECRET, {
-    expiresIn: '1d'
-  });
-  return token;
-};
+}); // Admin.method.generateAuthToken = function () {
+//   const token = jwt.sign(
+//     { _id: this._id, isAdmin: this.isAdmin },
+//     process.env.SECRET,
+//     { expiresIn: '1d' }
+//   );
+//   return token;
+// };
 
 var _default = _mongoose["default"].model('admin', Admin);
 
