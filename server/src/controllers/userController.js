@@ -21,7 +21,7 @@ class UserController {
 
   async signUp(req, res) {
     try {
-      const { fullName, email, phone, sex, age, password, role } = req.body;
+      const { fullName, email, phone, sex, age, password, isAdmin } = req.body;
 
       const error = validationResult(req);
       if (!error.isEmpty())
@@ -31,20 +31,25 @@ class UserController {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      // const token = jwt.sign({ email, isAdmin }, process.env.SECRET, {
-      //   expiresIn: '1d',
-      // });
-
+      
       //saving a user to database
-      await User.create({
+      const user = await User.create({
         fullName,
         email,
         phone,
         password: hashedPassword,
         sex,
         age,
-        token
+        isAdmin,
       });
+      
+      const token = jwt.sign(
+        { _id: user._id, isAdmin: user.isAdmin },
+        process.env.SECRET,
+        {
+          expiresIn: '1d',
+        }
+      );
 
       const transporter = nodemailer.createTransport({
         host: emailHost,
