@@ -6,10 +6,12 @@ import indexRouter from './routes/index.js';
 import usersRouter from './routes/users.js';
 import adminRouter from './routes/admins.js';
 import databaseConnection from '../server/src/config/db.js';
+import cors from 'cors';
 
 const app = express();
 dotenv.config();
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
