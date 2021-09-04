@@ -21,6 +21,8 @@ var _admins = _interopRequireDefault(require("./routes/admins.js"));
 
 var _db = _interopRequireDefault(require("../server/src/config/db.js"));
 
+var _cors = _interopRequireDefault(require("cors"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -31,6 +33,7 @@ var app = (0, _express["default"])();
 
 _dotenv["default"].config();
 
+app.use((0, _cors["default"])());
 app.use((0, _morgan["default"])('dev'));
 app.use(_express["default"].json());
 app.use(_express["default"].urlencoded({
