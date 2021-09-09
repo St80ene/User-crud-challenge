@@ -51,7 +51,6 @@ router.post(
 
 router.post(
   '/login',
-  authUser,
   [
     body('email', "Failed! Email can't be blank")
       .exists()

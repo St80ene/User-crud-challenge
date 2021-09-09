@@ -55,7 +55,7 @@ User.method.generateAuthToken = function () {
     _id: this._id,
     isAdmin: this.isAdmin
   }, process.env.SECRET, {
-    expiresIn: '1d'
+    expiresIn: '5m'
   });
 
   return token;

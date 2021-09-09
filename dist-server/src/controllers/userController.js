@@ -270,7 +270,7 @@ var UserController = /*#__PURE__*/function () {
                 _context3.t0 = _context3["catch"](0);
                 res.status(500).json({
                   status: 500,
-                  message: _context3.t0.message
+                  message: _context3.t0
                 });
 
               case 10:
@@ -318,7 +318,10 @@ var UserController = /*#__PURE__*/function () {
                 break;
 
               case 9:
-                throw new Error('User with this ID was not found');
+                return _context4.abrupt("return", res.status(404).json({
+                  status: 404,
+                  message: 'User with this ID was not found'
+                }));
 
               case 10:
                 _context4.next = 15;
@@ -375,7 +378,10 @@ var UserController = /*#__PURE__*/function () {
                 break;
 
               case 9:
-                throw new Error('User with this ID was not found');
+                return _context5.abrupt("return", res.status(404).json({
+                  status: 404,
+                  message: 'User with this ID was not found'
+                }));
 
               case 10:
                 _context5.next = 15;
@@ -445,7 +451,10 @@ var UserController = /*#__PURE__*/function () {
                 break;
 
               case 12:
-                throw new Error('User with this ID does not exist');
+                return _context6.abrupt("return", res.status(404).json({
+                  status: 404,
+                  message: 'User with this ID was not found'
+                }));
 
               case 13:
                 _context6.next = 18;
