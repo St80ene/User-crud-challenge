@@ -34,7 +34,7 @@ router.post('/signup', [body('Role', 'Failed! Role Field is not permitted').not(
 }).withMessage('Minimum of 3 and max of 10 characters'), body('email', 'Email cannot be blank').exists().bail().isEmail().withMessage('Failed! Invalid email format').custom(function (email) {
   return _shared["default"].isUniqueEmail(email);
 }, body('password', "Failed! Password can't be blank").exists().bail().isString().withMessage('Failed! Password must be a string').isStrongPassword().withMessage('Weak Password, allowed format is: {minLength: 8, minSymbol: 1, minUpperCase: 1, minLowerCase: 1}'))], user.signUp);
-router.post('/login', _auth["default"], [body('email', "Failed! Email can't be blank").exists().bail().isEmail().withMessage('Invalid email format'), body('password', "Failed! Password can't be blank").exists().bail().trim().not().isEmpty().withMessage("Password can't be empty")], user.login);
+router.post('/login', [body('email', "Failed! Email can't be blank").exists().bail().isEmail().withMessage('Invalid email format'), body('password', "Failed! Password can't be blank").exists().bail().trim().not().isEmpty().withMessage("Password can't be empty")], user.login);
 router.put('/edit/:id', _auth["default"], [header('authorization', 'Please specify an authorization header').exists().bail().custom(function (value) {
   return _shared["default"].isValidUserToken(value);
 }), body('firstName', 'Failed! First Name cannot be blank').optional().isString().withMessage('Failed. First name must be a string').trim().isLength({
