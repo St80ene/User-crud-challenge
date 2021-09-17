@@ -121,6 +121,7 @@ var UserController = /*#__PURE__*/function () {
                 transporter.sendMail(mailOptions);
                 return _context.abrupt("return", res.status(200).json({
                   status: 200,
+                  user: user,
                   message: 'You have signed up successfully',
                   token: token
                 }));

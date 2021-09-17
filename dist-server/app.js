@@ -34,6 +34,7 @@ var app = (0, _express["default"])();
 _dotenv["default"].config();
 
 app.use((0, _cors["default"])());
+app.options('*', (0, _cors["default"])());
 app.use((0, _morgan["default"])('dev'));
 app.use(_express["default"].json());
 app.use(_express["default"].urlencoded({
