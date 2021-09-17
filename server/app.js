@@ -11,6 +11,16 @@ import cors from 'cors';
 const app = express();
 dotenv.config();
 
+app.use((req, res, next) => {
+    res.set({
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+      'Access-Control-Allow-Headers':
+        "'Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token'",
+    });
+
+    next();
+});
 app.use(cors());
 app.options('*', cors())
 app.use(logger('dev'));

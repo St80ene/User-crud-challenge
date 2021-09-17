@@ -33,6 +33,14 @@ var app = (0, _express["default"])();
 
 _dotenv["default"].config();
 
+app.use(function (req, res, next) {
+  res.set({
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE',
+    'Access-Control-Allow-Headers': "'Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token'"
+  });
+  next();
+});
 app.use((0, _cors["default"])());
 app.options('*', (0, _cors["default"])());
 app.use((0, _morgan["default"])('dev'));
