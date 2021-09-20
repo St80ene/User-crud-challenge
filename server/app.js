@@ -34,8 +34,8 @@ app.use('/admins', adminRouter);
 databaseConnection();
 
 app.use(async (req, res, next) => {
-  if (req.headers['x-access-token']) {
-    const accessToken = req.headers['x-access-token'];
+  if (req.headers['x-auth-token']) {
+    const accessToken = req.headers['x-auth-token'];
     const { userId, exp } = await jwt.verify(
       accessToken,
       process.env.JWT_SECRET

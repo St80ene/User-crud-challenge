@@ -61,12 +61,12 @@ app.use( /*#__PURE__*/function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            if (!req.headers['x-access-token']) {
+            if (!req.headers['x-auth-token']) {
               _context.next = 15;
               break;
             }
 
-            accessToken = req.headers['x-access-token'];
+            accessToken = req.headers['x-auth-token'];
             _context.next = 4;
             return jwt.verify(accessToken, process.env.JWT_SECRET);
 

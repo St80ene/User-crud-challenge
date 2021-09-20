@@ -27,7 +27,7 @@ var body = _expressValidator["default"].body,
 /* GET users listing. */
 
 router.get('/', [_auth["default"], _admin["default"]], user.get);
-router.get('/:id', [_auth["default"], _admin["default"]], user.getById);
+router.get('/:id', [_auth["default"]], user.getById);
 router.post('/signup', [body('Role', 'Failed! Role Field is not permitted').not().exists(), body('fullName', 'Failed! Last Name cannot be blank').exists().bail().isString().withMessage('Failed! Last Name must be a string').trim().isLength({
   min: 3,
   max: 30
