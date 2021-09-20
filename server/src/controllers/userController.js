@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { validationResult } from 'express-validator';
 import nodemailer from 'nodemailer';
 import randomString from '../lib/randomCharacterGenerator.js';
+import logger from '../lib/logger.js'
 
 dotenv.config();
 
@@ -107,14 +108,12 @@ class UserController {
       }
       // Generate user token
       const token = jwt.sign(
-        {
-          email: client.email,
-        },
+        { _id: user._id, isAdmin: user.isAdmin },
         process.env.SECRET,
         {
-          expiresIn: '20d',
+          expiresIn: '1d',
         }
-        );
+      );
       // await User.findByIdAndUpdate(user._id, { accessToken: token });
       
         return res.status(200).json({
@@ -145,6 +144,9 @@ class UserController {
   async getById(req, res) {
     try {
       const id = req.params.id;
+      // logger.info(req.user._id)
+      console.log('req user => ', req.user);
+      if(req.user._id !== id && req.user.isAdmin !== true) return res.status(401).json({status: 401, message: 'You should be logged in as admin'})
       const user = await User.findById(id);
       if (user) {
         res

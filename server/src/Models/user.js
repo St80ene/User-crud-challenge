@@ -30,7 +30,10 @@ const User = new Schema({
     type: Number,
     required: true,
   },
-  isAdmin: Boolean,
+  isAdmin: {
+    type: Boolean,
+    default: false
+  },
   date: {
     type: Date,
     default: Date.now,
@@ -41,7 +44,7 @@ User.method.generateAuthToken = function () {
   const token = jwt.sign(
     { _id: this._id, isAdmin: this.isAdmin },
     process.env.SECRET,
-    { expiresIn: '5m' }
+    { expiresIn: '1d' }
   );
 
   return token;

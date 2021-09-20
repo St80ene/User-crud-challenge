@@ -14,7 +14,7 @@ const { body, header } = pkg;
 /* GET users listing. */
 router.get('/',[authUser, admin],user.get);
 
-router.get('/:id',[authUser, admin], user.getById);
+router.get('/:id',[authUser], user.getById);
 
 router.post(
   '/signup',
