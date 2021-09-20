@@ -218,6 +218,8 @@ var UserController = /*#__PURE__*/function () {
                 }); // await User.findByIdAndUpdate(user._id, { accessToken: token });
 
                 return _context2.abrupt("return", res.status(200).json({
+                  status: 200,
+                  user: client,
                   message: 'You have logged in successfully',
                   role: client.role,
                   token: token

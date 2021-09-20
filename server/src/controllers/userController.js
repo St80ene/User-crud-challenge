@@ -117,6 +117,8 @@ class UserController {
       // await User.findByIdAndUpdate(user._id, { accessToken: token });
       
         return res.status(200).json({
+          status: 200,
+          user: client,
           message: 'You have logged in successfully',
           role: client.role,
           token,
