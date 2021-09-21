@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = void 0;
 
-var _user8 = _interopRequireDefault(require("../Models/user.js"));
+var _user = _interopRequireDefault(require("../Models/user.js"));
 
 var _token = _interopRequireDefault(require("../Models/token.js"));
 
@@ -52,7 +52,7 @@ var UserController = /*#__PURE__*/function () {
     key: "signUp",
     value: function () {
       var _signUp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
-        var _req$body, fullName, email, phone, sex, age, password, isAdmin, error, salt, hashedPassword, _user, token, transporter, mailOptions;
+        var _req$body, fullName, email, phone, sex, age, password, isAdmin, error, salt, hashedPassword, user, token, transporter, mailOptions;
 
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
@@ -83,7 +83,7 @@ var UserController = /*#__PURE__*/function () {
               case 10:
                 hashedPassword = _context.sent;
                 _context.next = 13;
-                return _user8["default"].create({
+                return _user["default"].create({
                   fullName: fullName,
                   email: email,
                   phone: phone,
@@ -94,10 +94,10 @@ var UserController = /*#__PURE__*/function () {
                 });
 
               case 13:
-                _user = _context.sent;
+                user = _context.sent;
                 token = _jsonwebtoken["default"].sign({
-                  _id: _user._id,
-                  isAdmin: _user.isAdmin
+                  _id: user._id,
+                  isAdmin: user.isAdmin
                 }, process.env.SECRET, {
                   expiresIn: '1d'
                 });
@@ -123,7 +123,7 @@ var UserController = /*#__PURE__*/function () {
                 transporter.sendMail(mailOptions);
                 return _context.abrupt("return", res.status(200).json({
                   status: 200,
-                  user: _user,
+                  user: user,
                   message: 'You have signed up successfully',
                   token: token
                 }));
@@ -176,7 +176,7 @@ var UserController = /*#__PURE__*/function () {
 
               case 5:
                 _context2.next = 7;
-                return _user8["default"].findOne({
+                return _user["default"].findOne({
                   email: email
                 });
 
@@ -211,8 +211,8 @@ var UserController = /*#__PURE__*/function () {
               case 15:
                 // Generate user token
                 token = _jsonwebtoken["default"].sign({
-                  _id: user._id,
-                  isAdmin: user.isAdmin
+                  _id: client._id,
+                  isAdmin: client.isAdmin
                 }, process.env.SECRET, {
                   expiresIn: '1d'
                 }); // await User.findByIdAndUpdate(user._id, { accessToken: token });
@@ -231,7 +231,7 @@ var UserController = /*#__PURE__*/function () {
                 return _context2.abrupt("return", res.status(500).json({
                   status: 500,
                   message: 'Internal Server Error',
-                  error: _context2.t0
+                  error: _context2.t0.message
                 }));
 
               case 22:
@@ -252,22 +252,21 @@ var UserController = /*#__PURE__*/function () {
     key: "get",
     value: function () {
       var _get = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(req, res) {
-        var _user2;
-
+        var user;
         return regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
                 _context3.prev = 0;
                 _context3.next = 3;
-                return _user8["default"].find();
+                return _user["default"].find();
 
               case 3:
-                _user2 = _context3.sent;
+                user = _context3.sent;
                 res.status(200).json({
                   status: 200,
                   message: "Here's a list of Users",
-                  data: _user2
+                  data: user
                 });
                 _context3.next = 10;
                 break;
@@ -298,8 +297,7 @@ var UserController = /*#__PURE__*/function () {
     key: "getById",
     value: function () {
       var _getById = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
-        var id, _user3;
-
+        var id, user;
         return regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
@@ -321,12 +319,12 @@ var UserController = /*#__PURE__*/function () {
 
               case 5:
                 _context4.next = 7;
-                return _user8["default"].findById(id);
+                return _user["default"].findById(id);
 
               case 7:
-                _user3 = _context4.sent;
+                user = _context4.sent;
 
-                if (!_user3) {
+                if (!user) {
                   _context4.next = 12;
                   break;
                 }
@@ -334,7 +332,7 @@ var UserController = /*#__PURE__*/function () {
                 res.status(200).json({
                   status: 200,
                   message: "Here's your search",
-                  data: _user3
+                  data: user
                 });
                 _context4.next = 13;
                 break;
@@ -374,8 +372,7 @@ var UserController = /*#__PURE__*/function () {
     key: "delete",
     value: function () {
       var _delete2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
-        var userId, _user4;
-
+        var userId, user;
         return regeneratorRuntime.wrap(function _callee5$(_context5) {
           while (1) {
             switch (_context5.prev = _context5.next) {
@@ -383,12 +380,12 @@ var UserController = /*#__PURE__*/function () {
                 _context5.prev = 0;
                 userId = req.params.id;
                 _context5.next = 4;
-                return _user8["default"].findByIdAndDelete(userId, req.body);
+                return _user["default"].findByIdAndDelete(userId, req.body);
 
               case 4:
-                _user4 = _context5.sent;
+                user = _context5.sent;
 
-                if (!_user4) {
+                if (!user) {
                   _context5.next = 9;
                   break;
                 }
@@ -435,8 +432,7 @@ var UserController = /*#__PURE__*/function () {
     key: "update",
     value: function () {
       var _update = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(req, res) {
-        var error, userId, _user5;
-
+        var error, userId, user;
         return regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
@@ -457,12 +453,12 @@ var UserController = /*#__PURE__*/function () {
               case 4:
                 userId = req.params.id;
                 _context6.next = 7;
-                return _user8["default"].findByIdAndUpdate(userId, req.body);
+                return _user["default"].findByIdAndUpdate(userId, req.body);
 
               case 7:
-                _user5 = _context6.sent;
+                user = _context6.sent;
 
-                if (!_user5) {
+                if (!user) {
                   _context6.next = 12;
                   break;
                 }
@@ -507,8 +503,7 @@ var UserController = /*#__PURE__*/function () {
     key: "requestPasswordReset",
     value: function () {
       var _requestPasswordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(req, res) {
-        var error, email, _user6, token, text, subject, transporter, mailOptions;
-
+        var error, email, user, token, text, subject, transporter, mailOptions;
         return regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
             switch (_context7.prev = _context7.next) {
@@ -529,14 +524,14 @@ var UserController = /*#__PURE__*/function () {
                 email = req.body.email; // Find unique user
 
                 _context7.next = 7;
-                return _user8["default"].findOne({
+                return _user["default"].findOne({
                   email: email
                 });
 
               case 7:
-                _user6 = _context7.sent;
+                user = _context7.sent;
 
-                if (_user6) {
+                if (user) {
                   _context7.next = 10;
                   break;
                 }
@@ -548,7 +543,7 @@ var UserController = /*#__PURE__*/function () {
               case 10:
                 _context7.next = 12;
                 return _token["default"].findOne({
-                  userId: _user6._id
+                  userId: user._id
                 });
 
               case 12:
@@ -561,7 +556,7 @@ var UserController = /*#__PURE__*/function () {
 
                 _context7.next = 16;
                 return new _token["default"]({
-                  userId: _user6._id,
+                  userId: user._id,
                   token: (0, _randomCharacterGenerator["default"])(6)
                 }).save();
 
@@ -570,7 +565,7 @@ var UserController = /*#__PURE__*/function () {
 
               case 17:
                 // Send email
-                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/password-reset/").concat(_user6._id, "/").concat(token.token);
+                text = "To reset your password,\n      please click the link below.\n\n".concat(resetPasswordUrl, "/password-reset/").concat(user._id, "/").concat(token.token);
                 subject = 'Forgot Password'; // send email notification
 
                 transporter = _nodemailer["default"].createTransport({
@@ -621,8 +616,7 @@ var UserController = /*#__PURE__*/function () {
     key: "passwordReset",
     value: function () {
       var _passwordReset = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(req, res) {
-        var error, password, _user7, token;
-
+        var error, password, user, token;
         return regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
             switch (_context8.prev = _context8.next) {
@@ -642,12 +636,12 @@ var UserController = /*#__PURE__*/function () {
               case 4:
                 password = req.body.password;
                 _context8.next = 7;
-                return _user8["default"].findById(req.params.id);
+                return _user["default"].findById(req.params.id);
 
               case 7:
-                _user7 = _context8.sent;
+                user = _context8.sent;
 
-                if (_user7) {
+                if (user) {
                   _context8.next = 10;
                   break;
                 }
@@ -660,7 +654,7 @@ var UserController = /*#__PURE__*/function () {
               case 10:
                 _context8.next = 12;
                 return _token["default"].findOne({
-                  userId: _user7._id,
+                  userId: user._id,
                   token: req.params.token
                 });
 
@@ -678,9 +672,9 @@ var UserController = /*#__PURE__*/function () {
                 }));
 
               case 15:
-                _user7.password = password;
+                user.password = password;
                 _context8.next = 18;
-                return _user7.save();
+                return user.save();
 
               case 18:
                 _context8.next = 20;
