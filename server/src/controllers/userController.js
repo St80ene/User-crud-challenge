@@ -108,7 +108,7 @@ class UserController {
       }
       // Generate user token
       const token = jwt.sign(
-        { _id: user._id, isAdmin: user.isAdmin },
+        { _id: client._id, isAdmin: client.isAdmin },
         process.env.SECRET,
         {
           expiresIn: '1d',
@@ -127,7 +127,7 @@ class UserController {
       return res.status(500).json({
         status: 500,
         message: 'Internal Server Error',
-        error,
+        error: error.message,
       });
     }
   }
